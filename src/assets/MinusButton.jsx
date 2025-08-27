@@ -1,0 +1,7 @@
+export const MinusButton = () => (
+   <svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40" viewBox="0 0 24 24"  fill="#3A52EE">
+        <path fillRule="evenodd" clipRule="evenodd"
+              d="M7.5 12C7.5 11.5858 7.83579 11.25 8.25 11.25L15.75 11.25C16.1642 11.25 16.5 11.5858 16.5 12C16.5 12.4142 16.1642 12.75 15.75 12.75L8.25 12.75C7.83579 12.75 7.5 12.4142 7.5 12Z"
+             />
+    </svg>
+)
