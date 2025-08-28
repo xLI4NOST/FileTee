@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useCallback, useEffect, useState, memo} from "react";
 import './style.css'
 import ReactDOM from "react-dom/client";
 import { DeleteIcon, UnfoldIcon, FoldIcon, SearchIcon } from "./icons";
@@ -22,10 +22,21 @@ const data = {
   dir3: {},
 };
 
-const Form = () => {
+const Form = ({addDirectory}) => {
+  const [inputValue, setInputValue] = React.useState("");
+
   return <form className='form'>
-    <input className={'input'} placeholder='Введите название' name={'name'}/>
-    <button onClick={e=> e.preventDefault()} className="form_button">Создать</button>
+    <input value={inputValue} onChange={e => setInputValue(e.target.value)} className={'input'} placeholder='Введите название' name={'name'}/>
+    <button
+        className="form_button"
+        onClick={e => {
+          addDirectory( inputValue)
+          e.preventDefault();
+          setInputValue('')
+        }}
+    >
+      Создать
+    </button>
     <div className='search_input_container'>
       <SearchIcon className="search-icon"/>
       <input className={'input search_input'} placeholder={'Поиск'} name={'search'}/>
@@ -48,23 +59,46 @@ const RootDir =() => {
 }
 
 
-const Dir = ({value, name}) => {
+const Dir = memo( ({value, name}) => {
   const isEmpty = Object.keys(value).length === 0
+  const [isOpen, setIsOpen] = React.useState(true)
+
+  const handleShowItems =() =>{
+    console.log(isOpen)
+    setIsOpen(!isOpen)
+  }
+
+
   return <li key={name}>
     <div className='dirName dir'>
-      <button className='root_button'>
-        <FoldIcon/>
-      </button>
-      {name}</div>
+      {!isEmpty ?
+          <button onClick={handleShowItems} className='root_button'>
+            {isOpen ? <FoldIcon/> : <UnfoldIcon/>}
+          </button>
+          :
+          ''
+      }
 
-    {!isEmpty && <FileTree data={value}/>}
+      {name}
+    </div>
+
+    {!isEmpty && isOpen && <FileTree data={value}/>}
+  </li>
+})
+
+
+const FileTxt  = (name) => {
+ return <li key={name}>
+
+    <div className="dirName file">{name}</div>
   </li>
 }
 
-const FileTree = ({data}) => {
-  console.log(data)
+const FileTree = memo(({data}) => {
+  useEffect(() => {
+  }, [data]);
   const items = Object.entries(data)
-  console.log(items)
+  console.log('rerender')
   return <li>
     {
       items.map(([name, value]) => {
@@ -86,17 +120,38 @@ const FileTree = ({data}) => {
 
     }
   </li>
-}
+})
+
 
 const App = () => {
+  const [items, setItems] = useState(data);
+
+  // const handleAddDirectory = (name) =>{
+  //   const newData = structuredClone(data)
+  //   data[name] = {};
+  //   newData[name] = {}
+  //   setItems(newData)
+  // }
+  const handleAddDirectory = useCallback((name)=>{
+    const newData = structuredClone(data)
+
+    if(newData.hasOwnProperty(name)){
+      alert('Такая папка уже существует')
+      return
+    }
+
+    data[name] = {};
+    newData[name] = {}
+    setItems(newData)
+  }, [])
 
 
   return <div className='main-container'>
 
-    <Form/>
+    <Form addDirectory={handleAddDirectory}/>
     <ul className='mainDir'>
       <div className='dirName'>root</div>
-      <FileTree data={data}/>
+      <FileTree data={items}/>
     </ul>
 
 
@@ -106,43 +161,3 @@ const App = () => {
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(<App/>);
-
-
-
-
-
-
-{/*<li>*/}
-{/*  <div className='dirName file'>file.txt</div>*/}
-{/*</li>*/}
-{/*  <div className="dirName">dir 1</div>*/}
-
-
-{/*<li>*/}
-{/*  <div className='dirName dir'>dir1</div>*/}
-
-{/*  <li>*/}
-{/*    <div className='dirName dir'>subdir1</div>*/}
-{/*  </li>*/}
-
-{/*  <li>*/}
-{/*    <div className='dirName dir'>subdir2</div>*/}
-{/*    <li>*/}
-{/*      <div className='dirName file'>file.txt</div>*/}
-{/*    </li>*/}
-
-{/*  </li>*/}
-{/*</li>*/}
-{/*<li>*/}
-{/*  <div className='dirName dir'>dir2</div>*/}
-{/*  <li>*/}
-{/*    <div className='dirName file'>file2.txt</div>*/}
-{/*    <div className='dirName file'>file3.txt</div>*/}
-{/*  </li>*/}
-
-{/*</li>*/}
-
-{/*<li>*/}
-{/*<div className='dirName dir'>dir3</div>*/}
-
-{/*</li>*/}
