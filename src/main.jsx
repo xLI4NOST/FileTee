@@ -59,7 +59,7 @@ const RootDir =() => {
 }
 
 
-const Dir = memo( ({value, name}) => {
+const Dir = ({value, name}) => {
   const isEmpty = Object.keys(value).length === 0
   const [isOpen, setIsOpen] = React.useState(true)
 
@@ -67,9 +67,12 @@ const Dir = memo( ({value, name}) => {
     console.log(isOpen)
     setIsOpen(!isOpen)
   }
+  const handleAddSubdir = (e) =>{
+    e.stopPropagation()
+  }
 
 
-  return <li key={name}>
+  return <li onClick={e=>handleAddSubdir(e)} key={name}>
     <div className='dirName dir'>
       {!isEmpty ?
           <button onClick={handleShowItems} className='root_button'>
@@ -83,55 +86,39 @@ const Dir = memo( ({value, name}) => {
     </div>
 
     {!isEmpty && isOpen && <FileTree data={value}/>}
+
   </li>
-})
+}
 
 
-const FileTxt  = (name) => {
+const FileTxt  = ({name}) => {
  return <li key={name}>
 
     <div className="dirName file">{name}</div>
   </li>
 }
 
-const FileTree = memo(({data}) => {
-  useEffect(() => {
-  }, [data]);
+
+
+const FileTree = ({data}) =>{
+
   const items = Object.entries(data)
-  console.log('rerender')
+
   return <li>
-    {
-      items.map(([name, value]) => {
-        if (value === true && value) {
-          return (
-              <li key={name}>
+    {items.map(([name, value])=>{
+      if(typeof value === 'boolean'){
+        return <FileTxt name={name}/>
+      }else {
+        return <Dir name={name} value={value}/>
+      }
+    })}
 
-                <div className="dirName file">{name}</div>
-              </li>
-          )
-        } else if (typeof value === "object" && value !== null && value !== undefined) {
-          return (
-              <Dir value={value} name={name} key={name}/>
-
-          )
-        }
-        return null
-      })
-
-    }
   </li>
-})
+}
 
 
 const App = () => {
   const [items, setItems] = useState(data);
-
-  // const handleAddDirectory = (name) =>{
-  //   const newData = structuredClone(data)
-  //   data[name] = {};
-  //   newData[name] = {}
-  //   setItems(newData)
-  // }
   const handleAddDirectory = useCallback((name)=>{
     const newData = structuredClone(data)
 
@@ -151,6 +138,7 @@ const App = () => {
     <Form addDirectory={handleAddDirectory}/>
     <ul className='mainDir'>
       <div className='dirName'>root</div>
+
       <FileTree data={items}/>
     </ul>
 
